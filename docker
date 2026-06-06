@@ -1,13 +1,28 @@
-FROM python:3.11
+version: "3.9"
 
-WORKDIR /app
+services:
+  api:
+    build: .
+    container_name: corebanking_api
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://admin:admin@db:5432/corebank
 
-COPY requirements.txt .
+  db:
+    image: postgres:15
+    container_name: corebanking_db
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: corebank
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-
-EXPOSE 8000
-
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+volumes:
+  pgdata:
